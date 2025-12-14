@@ -107,10 +107,11 @@ The artifacts include:
 ### Quick Start (Windows)
 
 1. Install Visual Studio 2022 with Windows 10/11 SDK
-2. Obtain Telegram API credentials (api_id and api_hash) from https://core.telegram.org/api/obtaining_api_id
-3. Clone this repository: `git clone --recursive https://github.com/goodthebest/tdesktopx.git`
-4. Run the build preparation script
-5. Configure and build with your API credentials
+2. Clone this repository: `git clone --recursive https://github.com/goodthebest/tdesktopx.git`
+3. Run the build preparation script
+4. Configure and build
+
+**Note**: MyTelegram uses test API credentials by default, so you don't need to obtain your own API credentials for personal use or testing. If you plan to deploy for production use, see [docs/api_credentials.md](docs/api_credentials.md) for information on obtaining your own credentials.
 
 See [docs/building-win.md](docs/building-win.md) for detailed instructions.
 

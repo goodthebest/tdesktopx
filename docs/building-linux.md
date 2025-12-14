@@ -4,9 +4,9 @@
 
 Choose a folder for the future build, for example **/home/user/TBuild**. It will be named ***BuildPath*** in the rest of this document. All commands will be launched from Terminal.
 
-### Obtain your API credentials
+### API Credentials
 
-You will require **api_id** and **api_hash** to access the Telegram API servers. To learn how to obtain them [click here][api_credentials].
+**MyTelegram uses test API credentials by default**, so you can build without obtaining your own credentials. For more information or to use custom credentials, see [api_credentials.md][api_credentials].
 
 ### Clone source code and prepare libraries
 
@@ -17,26 +17,24 @@ Install [poetry](https://python-poetry.org), go to ***BuildPath*** and run
 
 ### Building the project
 
-Go to ***BuildPath*/tdesktop** and run (using [your **api_id** and **api_hash**](#obtain-your-api-credentials))
+Go to ***BuildPath*/tdesktop** and run:
 
     docker run --rm -it \
         -u $(id -u) \
         -v "$PWD:/usr/src/tdesktop" \
         tdesktop:centos_env \
-        /usr/src/tdesktop/Telegram/build/docker/centos_env/build.sh \
-        -D TDESKTOP_API_ID=YOUR_API_ID \
-        -D TDESKTOP_API_HASH=YOUR_API_HASH
+        /usr/src/tdesktop/Telegram/build/docker/centos_env/build.sh
 
-Or, to create a debug build, run (also using [your **api_id** and **api_hash**](#obtain-your-api-credentials))
+Or, to create a debug build, run:
 
     docker run --rm -it \
         -u $(id -u) \
         -v "$PWD:/usr/src/tdesktop" \
         -e CONFIG=Debug \
         tdesktop:centos_env \
-        /usr/src/tdesktop/Telegram/build/docker/centos_env/build.sh \
-        -D TDESKTOP_API_ID=YOUR_API_ID \
-        -D TDESKTOP_API_HASH=YOUR_API_HASH
+        /usr/src/tdesktop/Telegram/build/docker/centos_env/build.sh
+
+**Note:** Test API credentials are used automatically. If you need to use your own credentials, add: `-D TDESKTOP_API_ID=YOUR_API_ID -D TDESKTOP_API_HASH=YOUR_API_HASH`
 
 The built files will be in the `out` directory.
 
@@ -44,7 +42,9 @@ The built files will be in the `out` directory.
 
 Ensure you've followed the instruction up to the [**Clone source code and prepare libraries**](#clone-source-code-and-prepare-libraries) step at least.
 
-Open the repository in Visual Studio Code, install the [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension and add the following to `.vscode/settings.json` (using [your **api_id** and **api_hash**](#obtain-your-api-credentials)):
+Open the repository in Visual Studio Code and install the [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension.
+
+**Note:** Test API credentials are used automatically. If you need to use your own credentials, add the following to `.vscode/settings.json`:
 
     {
         "cmake.configureSettings": {

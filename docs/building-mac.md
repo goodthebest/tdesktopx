@@ -8,9 +8,9 @@ Choose a folder for the future build, for example **/Users/user/TBuild**. It wil
 - **~35 GB** for libraries (when building for both x64 and arm64 architectures)
 - **~20 GB** for the compiled Telegram app (in the `out` folder)
 
-### Obtain your API credentials
+### API Credentials
 
-You will require **api_id** and **api_hash** to access the Telegram API servers. To learn how to obtain them [click here][api_credentials].
+**MyTelegram uses test API credentials by default**, so you can build without obtaining your own credentials. For more information or to use custom credentials, see [api_credentials.md][api_credentials].
 
 ### Clone source code and prepare libraries
 
@@ -26,9 +26,11 @@ Go to ***BuildPath*** and run
 
 ### Building the project
 
-Go to ***BuildPath*/tdesktop/Telegram** and run (using [your **api_id** and **api_hash**](#obtain-your-api-credentials))
+Go to ***BuildPath*/tdesktop/Telegram** and run:
 
-    ./configure.sh -D TDESKTOP_API_ID=YOUR_API_ID -D TDESKTOP_API_HASH=YOUR_API_HASH
+    ./configure.sh
+
+**Note:** Test API credentials are used automatically. If you need to use your own credentials, add: `-D TDESKTOP_API_ID=YOUR_API_ID -D TDESKTOP_API_HASH=YOUR_API_HASH`
 
 Then launch Xcode, open ***BuildPath*/tdesktop/out/Telegram.xcodeproj** and build for Debug / Release.
 
