@@ -187,7 +187,7 @@ jobs:
           %TDESKTOP_BUILD_GENERATOR% ^
           %TDESKTOP_BUILD_ARCH% ^
           %TDESKTOP_BUILD_API% ^
-          -D CMAKE_CONFIGURATION_TYPES=Debug ^
+          -D CMAKE_CONFIGURATION_TYPES="Debug;Release" ^
           -D CMAKE_COMPILE_WARNING_AS_ERROR=ON ^
           -D CMAKE_MSVC_DEBUG_INFORMATION_FORMAT= ^
           -D DESKTOP_APP_DISABLE_AUTOUPDATE=OFF ^
@@ -195,14 +195,74 @@ jobs:
           %TDESKTOP_BUILD_DEFINE%
 
           cmake --build ..\out --config Debug --parallel
+          cmake --build ..\out --config Release --parallel
+
+      - name: Install Inno Setup.
+        if: (env.UPLOAD_ARTIFACT == 'true') || (github.ref == 'refs/heads/nightly')
+        run: |
+          choco install innosetup -y
+
+      - name: Read version information.
+        if: (env.UPLOAD_ARTIFACT == 'true') || (github.ref == 'refs/heads/nightly')
+        shell: bash
+        run: |
+          cd $TBUILD/$REPO_NAME/Telegram/build
+          AppVersionStrSmall=$(grep "AppVersionStrSmall" version | awk '{print $2}')
+          AppVersionStr=$(grep "AppVersionStr" version | awk 'NR==1 {print $2}')
+          AppVersionStrFull="$AppVersionStr"
+          echo "APP_VERSION_STR_SMALL=$AppVersionStrSmall" >> $GITHUB_ENV
+          echo "APP_VERSION_STR=$AppVersionStr" >> $GITHUB_ENV
+          echo "APP_VERSION_STR_FULL=$AppVersionStrFull" >> $GITHUB_ENV
+
+      - name: Create installer with Inno Setup.
+        if: (env.UPLOAD_ARTIFACT == 'true') || (github.ref == 'refs/heads/nightly')
+        run: |
+          set "ReleasePath=%TBUILD%\%REPO_NAME%\out\Release"
+          set "SetupScript=%TBUILD%\%REPO_NAME%\Telegram\build\setup.iss"
+          
+          REM Determine build target
+          if "${{ matrix.arch }}" == "x64" (
+            set "BuildTarget=win64"
+          ) else if "${{ matrix.arch }}" == "Win32" (
+            set "BuildTarget=win"
+          ) else (
+            set "BuildTarget=win"
+          )
+          
+          REM Compile installer with Inno Setup
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" ^
+            /dMyAppVersion=%APP_VERSION_STR_SMALL% ^
+            /dMyAppVersionZero=%APP_VERSION_STR% ^
+            /dMyAppVersionFull=%APP_VERSION_STR_FULL% ^
+            /dReleasePath=%ReleasePath% ^
+            /dMyBuildTarget=%BuildTarget% ^
+            "%SetupScript%"
 
       - name: Move artifact.
         if: (env.UPLOAD_ARTIFACT == 'true') || (github.ref == 'refs/heads/nightly')
         run: |
-          set OUT=%TBUILD%\%REPO_NAME%\out\Debug
+          set OUT=%TBUILD%\%REPO_NAME%\out\Release
           mkdir artifact
-          move %OUT%\Telegram.exe artifact/
-          move %OUT%\Updater.exe artifact/
+          
+          REM Copy executables
+          copy %OUT%\Telegram.exe artifact\
+          copy %OUT%\Updater.exe artifact\
+          
+          REM Copy installer if it exists
+          if "${{ matrix.arch }}" == "x64" (
+            if exist %OUT%\tsetup-x64.%APP_VERSION_STR_FULL%.exe (
+              copy %OUT%\tsetup-x64.%APP_VERSION_STR_FULL%.exe artifact\MyTelegram-Setup-x64-%APP_VERSION_STR_FULL%.exe
+            )
+          ) else (
+            if exist %OUT%\tsetup.%APP_VERSION_STR_FULL%.exe (
+              copy %OUT%\tsetup.%APP_VERSION_STR_FULL%.exe artifact\MyTelegram-Setup-%APP_VERSION_STR_FULL%.exe
+            )
+          )
+          
+          REM Copy d3d compiler if it exists
+          if exist %OUT%\modules mkdir artifact\modules
+          if exist %OUT%\modules xcopy /E /I %OUT%\modules artifact\modules
+
       - uses: actions/upload-artifact@v5
         name: Upload artifact.
         if: (env.UPLOAD_ARTIFACT == 'true') || (github.ref == 'refs/heads/nightly')
