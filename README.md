@@ -81,18 +81,18 @@ Version **1.8.15** was the last that supports older systems
 
 ## Download Compiled Binary/Installer
 
-**For Windows 11 users**: Pre-built installers and portable executables are automatically generated for every commit and available in the [GitHub Actions artifacts](https://github.com/goodthebest/tdesktopx/actions/workflows/win.yml).
+**For Windows users** (Windows 7 and above): Pre-built installers and portable executables are automatically generated for every commit and available in the [GitHub Actions artifacts](https://github.com/goodthebest/tdesktopx/actions/workflows/win.yml).
 
 To download:
 1. Go to the [Windows workflow runs](https://github.com/goodthebest/tdesktopx/actions/workflows/win.yml)
 2. Click on the latest successful run (green checkmark)
 3. Scroll down to the "Artifacts" section
 4. Download the appropriate artifact:
-   - **Telegram_x64**: Windows 11 64-bit installer and executables
-   - **Telegram_Win32**: Windows 11 32-bit installer and executables
+   - **Telegram_x64**: Windows 64-bit installer and executables
+   - **Telegram_Win32**: Windows 32-bit installer and executables
 
 The artifacts include:
-- **MyTelegram-Setup-[version].exe**: Full installer for Windows 11
+- **MyTelegram-Setup-[version].exe**: Full installer for Windows (requires Windows 7 or later)
 - **Telegram.exe**: Portable executable (can run without installation)
 - **Updater.exe**: Update utility
 

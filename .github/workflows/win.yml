@@ -207,8 +207,8 @@ jobs:
         shell: bash
         run: |
           cd $TBUILD/$REPO_NAME/Telegram/build
-          AppVersionStrSmall=$(grep "AppVersionStrSmall" version | awk '{print $2}')
-          AppVersionStr=$(grep "AppVersionStr" version | awk 'NR==1 {print $2}')
+          AppVersionStrSmall=$(grep "^AppVersionStrSmall " version | awk '{print $2}')
+          AppVersionStr=$(grep "^AppVersionStr " version | awk '{print $2}')
           AppVersionStrFull="$AppVersionStr"
           echo "APP_VERSION_STR_SMALL=$AppVersionStrSmall" >> $GITHUB_ENV
           echo "APP_VERSION_STR=$AppVersionStr" >> $GITHUB_ENV
@@ -219,9 +219,6 @@ jobs:
         run: |
           set "ReleasePath=%TBUILD%\%REPO_NAME%\out\Release"
           set "SetupScript=%TBUILD%\%REPO_NAME%\Telegram\build\setup.iss"
-          set "AppVersionStrSmall=${{ env.APP_VERSION_STR_SMALL }}"
-          set "AppVersionStr=${{ env.APP_VERSION_STR }}"
-          set "AppVersionStrFull=${{ env.APP_VERSION_STR_FULL }}"
           
           REM Determine build target
           if "${{ matrix.arch }}" == "x64" (
@@ -232,11 +229,21 @@ jobs:
             set "BuildTarget=win"
           )
           
+          REM Find Inno Setup compiler
+          if exist "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" (
+            set "ISCC=C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          ) else if exist "%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe" (
+            set "ISCC=%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe"
+          ) else (
+            echo ERROR: Inno Setup compiler not found
+            exit /b 1
+          )
+          
           REM Compile installer with Inno Setup
-          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" ^
-            /dMyAppVersion=%AppVersionStrSmall% ^
-            /dMyAppVersionZero=%AppVersionStr% ^
-            /dMyAppVersionFull=%AppVersionStrFull% ^
+          "%ISCC%" ^
+            /dMyAppVersion=${{ env.APP_VERSION_STR_SMALL }} ^
+            /dMyAppVersionZero=${{ env.APP_VERSION_STR }} ^
+            /dMyAppVersionFull=${{ env.APP_VERSION_STR_FULL }} ^
             /dReleasePath=%ReleasePath% ^
             /dMyBuildTarget=%BuildTarget% ^
             "%SetupScript%"
