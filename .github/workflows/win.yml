@@ -207,8 +207,8 @@ jobs:
         shell: bash
         run: |
           cd $TBUILD/$REPO_NAME/Telegram/build
-          AppVersionStrSmall=$(grep "^AppVersionStrSmall " version | awk '{print $2}')
-          AppVersionStr=$(grep "^AppVersionStr " version | awk '{print $2}')
+          AppVersionStrSmall=$(awk '/^AppVersionStrSmall / {print $2}' version)
+          AppVersionStr=$(awk '/^AppVersionStr[[:space:]]/ {print $2}' version)
           AppVersionStrFull="$AppVersionStr"
           echo "APP_VERSION_STR_SMALL=$AppVersionStrSmall" >> $GITHUB_ENV
           echo "APP_VERSION_STR=$AppVersionStr" >> $GITHUB_ENV
