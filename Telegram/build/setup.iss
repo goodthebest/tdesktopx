@@ -35,6 +35,7 @@ DisableDirPage=no
 DisableProgramGroupPage=no
 WizardStyle=modern
 SignTool=sha256
+MinVersion=6.1
 
 #if MyBuildTarget == "winarm"
   ArchitecturesAllowed="arm64"
