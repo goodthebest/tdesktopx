@@ -16,10 +16,12 @@ if (NOT DEFINED TDESKTOP_API_TEST)
     endif()
 endif()
 
+# Default values act as sentinels to detect if user provided custom credentials
 set(TDESKTOP_API_ID "0" CACHE STRING "Provide 'api_id' for the Telegram API access.")
 set(TDESKTOP_API_HASH "" CACHE STRING "Provide 'api_hash' for the Telegram API access.")
 
 # Use test credentials only if user hasn't provided custom credentials
+# (i.e., if values are still at their default sentinel values)
 if (TDESKTOP_API_TEST AND (TDESKTOP_API_ID STREQUAL "0" OR TDESKTOP_API_HASH STREQUAL ""))
     set(TDESKTOP_API_ID 17349)
     set(TDESKTOP_API_HASH 344583e45741c457fe1862106095a5eb)
