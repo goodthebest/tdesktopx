@@ -198,12 +198,12 @@ jobs:
           cmake --build ..\out --config Release --parallel
 
       - name: Install Inno Setup.
-        if: (env.UPLOAD_ARTIFACT == 'true') || (github.ref == 'refs/heads/nightly')
+        if: ((env.UPLOAD_ARTIFACT == 'true') || (github.ref == 'refs/heads/nightly')) && (matrix.generator == '')
         run: |
           choco install innosetup -y
 
       - name: Read version information.
-        if: (env.UPLOAD_ARTIFACT == 'true') || (github.ref == 'refs/heads/nightly')
+        if: ((env.UPLOAD_ARTIFACT == 'true') || (github.ref == 'refs/heads/nightly')) && (matrix.generator == '')
         shell: bash
         run: |
           cd $TBUILD/$REPO_NAME/Telegram/build
@@ -215,7 +215,7 @@ jobs:
           echo "APP_VERSION_STR_FULL=$AppVersionStrFull" >> $GITHUB_ENV
 
       - name: Create installer with Inno Setup.
-        if: (env.UPLOAD_ARTIFACT == 'true') || (github.ref == 'refs/heads/nightly')
+        if: ((env.UPLOAD_ARTIFACT == 'true') || (github.ref == 'refs/heads/nightly')) && (matrix.generator == '')
         run: |
           set "ReleasePath=%TBUILD%\%REPO_NAME%\out\Release"
           set "SetupScript=%TBUILD%\%REPO_NAME%\Telegram\build\setup.iss"
@@ -243,29 +243,33 @@ jobs:
 
       - name: Move artifact.
         if: (env.UPLOAD_ARTIFACT == 'true') || (github.ref == 'refs/heads/nightly')
+        shell: bash
         run: |
-          set OUT=%TBUILD%\%REPO_NAME%\out\Release
-          set "AppVersionStrFull=${{ env.APP_VERSION_STR_FULL }}"
-          mkdir artifact
+          OUT=$TBUILD/$REPO_NAME/out/Release
+          mkdir -p artifact
           
-          REM Copy executables
-          copy %OUT%\Telegram.exe artifact\
-          copy %OUT%\Updater.exe artifact\
+          # Copy executables
+          cp "$OUT/Telegram.exe" artifact/
+          cp "$OUT/Updater.exe" artifact/
           
-          REM Copy installer if it exists
-          if "${{ matrix.arch }}" == "x64" (
-            if exist %OUT%\tsetup-x64.%AppVersionStrFull%.exe (
-              copy %OUT%\tsetup-x64.%AppVersionStrFull%.exe artifact\MyTelegram-Setup-x64-%AppVersionStrFull%.exe
-            )
-          ) else (
-            if exist %OUT%\tsetup.%AppVersionStrFull%.exe (
-              copy %OUT%\tsetup.%AppVersionStrFull%.exe artifact\MyTelegram-Setup-%AppVersionStrFull%.exe
-            )
-          )
+          # Copy installer if it exists (only for standard builds without generator)
+          if [ "${{ matrix.generator }}" == "" ]; then
+            APP_VERSION_STR_FULL="${{ env.APP_VERSION_STR_FULL }}"
+            if [ "${{ matrix.arch }}" == "x64" ]; then
+              if [ -f "$OUT/tsetup-x64.$APP_VERSION_STR_FULL.exe" ]; then
+                cp "$OUT/tsetup-x64.$APP_VERSION_STR_FULL.exe" "artifact/MyTelegram-Setup-x64-$APP_VERSION_STR_FULL.exe"
+              fi
+            else
+              if [ -f "$OUT/tsetup.$APP_VERSION_STR_FULL.exe" ]; then
+                cp "$OUT/tsetup.$APP_VERSION_STR_FULL.exe" "artifact/MyTelegram-Setup-$APP_VERSION_STR_FULL.exe"
+              fi
+            fi
+          fi
           
-          REM Copy d3d compiler if it exists
-          if exist %OUT%\modules mkdir artifact\modules
-          if exist %OUT%\modules xcopy /E /I %OUT%\modules artifact\modules
+          # Copy d3d compiler if it exists
+          if [ -d "$OUT/modules" ]; then
+            cp -r "$OUT/modules" artifact/
+          fi
 
       - uses: actions/upload-artifact@v5
         name: Upload artifact.
