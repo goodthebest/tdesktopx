@@ -19,7 +19,8 @@ endif()
 set(TDESKTOP_API_ID "0" CACHE STRING "Provide 'api_id' for the Telegram API access.")
 set(TDESKTOP_API_HASH "" CACHE STRING "Provide 'api_hash' for the Telegram API access.")
 
-if (TDESKTOP_API_TEST)
+# Use test credentials only if user hasn't provided custom credentials
+if (TDESKTOP_API_TEST AND (TDESKTOP_API_ID STREQUAL "0" OR TDESKTOP_API_HASH STREQUAL ""))
     set(TDESKTOP_API_ID 17349)
     set(TDESKTOP_API_HASH 344583e45741c457fe1862106095a5eb)
 endif()
