@@ -8,10 +8,12 @@ option(MYTELEGRAM_BRAND "Enable MyTelegram branding and customizations" ON)
 
 # Enable test API credentials by default for MyTelegram builds
 # Users can still override by setting TDESKTOP_API_TEST=OFF and providing custom credentials
-if (MYTELEGRAM_BRAND)
-    option(TDESKTOP_API_TEST "Use test API credentials." ON)
-else()
-    option(TDESKTOP_API_TEST "Use test API credentials." OFF)
+if (NOT DEFINED TDESKTOP_API_TEST)
+    if (MYTELEGRAM_BRAND)
+        set(TDESKTOP_API_TEST ON CACHE BOOL "Use test API credentials.")
+    else()
+        set(TDESKTOP_API_TEST OFF CACHE BOOL "Use test API credentials.")
+    endif()
 endif()
 
 set(TDESKTOP_API_ID "0" CACHE STRING "Provide 'api_id' for the Telegram API access.")
