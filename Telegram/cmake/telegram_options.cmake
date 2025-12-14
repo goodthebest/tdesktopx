@@ -6,8 +6,8 @@
 
 option(MYTELEGRAM_BRAND "Enable MyTelegram branding and customizations" ON)
 
-# Enable test API credentials by default for MyTelegram branded builds
-# Users can override by providing their own API credentials
+# Enable test API credentials by default for MyTelegram builds
+# Users can still override by setting TDESKTOP_API_TEST=OFF and providing custom credentials
 if (MYTELEGRAM_BRAND)
     option(TDESKTOP_API_TEST "Use test API credentials." ON)
 else()
