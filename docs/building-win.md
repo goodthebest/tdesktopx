@@ -1,9 +1,13 @@
-# Build instructions for Windows
+# Build instructions for Windows (MyTelegram)
+
+This is a rebranded fork of Telegram Desktop called **MyTelegram**. It can run side-by-side with official Telegram Desktop on Windows 11.
 
 - [Prepare folder](#prepare-folder)
 - [Install third party software](#install-third-party-software)
 - [Clone source code and prepare libraries](#clone-source-code-and-prepare-libraries)
 - [Build the project](#build-the-project)
+- [Building portable version](#building-portable-version)
+- [Building installer](#building-installer)
 - [Qt Visual Studio Tools](#qt-visual-studio-tools)
 
 ## Prepare folder
@@ -27,18 +31,45 @@ You will require **api_id** and **api_hash** to access the Telegram API servers.
 
 Open **x86 Native Tools Command Prompt for VS 2022.bat**, go to ***BuildPath*** and run
 
-    git clone --recursive https://github.com/telegramdesktop/tdesktop.git
-    tdesktop\Telegram\build\prepare\win.bat
+    git clone --recursive https://github.com/goodthebest/tdesktopx.git
+    tdesktopx\Telegram\build\prepare\win.bat
 
 ## Build the project
 
-Go to ***BuildPath*\\tdesktop\\Telegram** and run (using [your **api_id** and **api_hash**](#obtain-your-api-credentials))
+Go to ***BuildPath*\\tdesktopx\\Telegram** and run (using [your **api_id** and **api_hash**](#obtain-your-api-credentials))
 
     configure.bat -D TDESKTOP_API_ID=YOUR_API_ID -D TDESKTOP_API_HASH=YOUR_API_HASH
 
-* Open ***BuildPath*\\tdesktop\\out\\Telegram.sln** in Visual Studio 2022
+**Note:** MyTelegram branding is enabled by default via the `MYTELEGRAM_BRAND` CMake option. This automatically:
+- Disables auto-updates
+- Uses separate data directory (%APPDATA%\MyTelegram)
+- Uses unique single-instance identifier
+- Enables side-by-side installation with official Telegram Desktop
+
+* Open ***BuildPath*\\tdesktopx\\out\\Telegram.sln** in Visual Studio 2022
 * Select Telegram project and press Build > Build Telegram (Debug and Release configurations)
-* The result Telegram.exe will be located in **D:\TBuild\tdesktop\out\Debug** (and **Release**)
+* The result Telegram.exe will be located in **D:\TBuild\tdesktopx\out\Debug** (and **Release**)
+
+## Building portable version
+
+The Release build creates a portable version by default. Simply copy the contents of the **Release** folder to any location and run **Telegram.exe**. The application will store its data in the same folder.
+
+## Building installer
+
+To build the Windows installer using Inno Setup:
+
+1. Download and install [Inno Setup](https://jrsoftware.org/isdl.php) (version 6.x or later)
+2. Build the Release configuration as described above
+3. Open **Telegram\build\setup.iss** in Inno Setup Compiler
+4. Make sure the script variables point to your build output directory
+5. Click **Build > Compile** to create the installer
+6. The installer will be generated in the output directory specified in setup.iss
+
+The installer will:
+- Install to **C:\Program Files\MyTelegram** by default
+- Create Start Menu shortcuts for MyTelegram
+- Allow installation alongside official Telegram Desktop
+- Use separate AppData directory for MyTelegram
 
 ### Qt Visual Studio Tools
 
