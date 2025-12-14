@@ -19,6 +19,30 @@ jobs:
           submodules: recursive
           lfs: true
 
+      - name: Fix mytelegram.ico (convert PNG -> ICO if needed)
+        shell: pwsh
+        run: |
+          $ico = Join-Path $env:GITHUB_WORKSPACE "mytelegram.ico"
+          if (Test-Path $ico) {
+            $bytes = [System.IO.File]::ReadAllBytes($ico)
+            if ($bytes.Length -ge 8) {
+              $isPng = ($bytes[0] -eq 0x89 -and $bytes[1] -eq 0x50 -and $bytes[2] -eq 0x4E -and $bytes[3] -eq 0x47)
+              if ($isPng) {
+                Write-Host "mytelegram.ico is actually a PNG. Converting to real .ico..."
+                choco install imagemagick -y --no-progress
+                $tmp = Join-Path $env:RUNNER_TEMP "mytelegram_converted.ico"
+                magick $ico -background none -define icon:auto-resize=256,128,64,48,32,16 $tmp
+                Move-Item -Force $tmp $ico
+              } else {
+                Write-Host "mytelegram.ico already looks like an ICO."
+              }
+            } else {
+              Write-Host "mytelegram.ico is too small/unexpected; skipping."
+            }
+          } else {
+            Write-Host "No mytelegram.ico found at repo root; skipping."
+          }
+
       - name: Enable long paths
         shell: pwsh
         run: git config --system core.longpaths true
