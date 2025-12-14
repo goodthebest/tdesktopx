@@ -1,4 +1,4 @@
-name: Windows Build (MyTelegram)
+name: Windows Build (MyTelegram x64)
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-    timeout-minutes: 180
+    timeout-minutes: 240
 
     steps:
       - name: Checkout (with submodules)
@@ -19,36 +19,42 @@ jobs:
           submodules: recursive
           lfs: true
 
-      - name: Git long paths
+      - name: Enable long paths
         shell: pwsh
-        run: |
-          git config --system core.longpaths true
+        run: git config --system core.longpaths true
 
       - name: Setup Python 3.10
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
-      - name: Setup MSVC environment
+      - name: Setup MSVC environment (x64)
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
 
-      # 1) Prepare third-party libs (Qt/FFmpeg/etc) using repo script
+      # Optional but strongly recommended: cache prepared deps
+      - name: Cache ThirdParty + Libraries
+        uses: actions/cache@v4
+        with:
+          path: |
+            ThirdParty
+            Libraries
+            Libraries/win64
+          key: win64-deps-${{ runner.os }}-${{ hashFiles('Telegram/build/prepare/**', 'Telegram/build/qt_version.py', '.gitmodules') }}
+
       - name: Prepare libraries (win.bat)
         shell: cmd
         run: |
           cd /d "%GITHUB_WORKSPACE%"
           Telegram\build\prepare\win.bat
 
-      # 2) Generate Visual Studio solution using repo script
-      - name: Configure (generate out\Telegram.sln)
+      - name: Configure (x64) - generates out\Telegram.sln
         shell: cmd
         run: |
           cd /d "%GITHUB_WORKSPACE%\Telegram"
-          configure.bat
+          configure.bat x64
 
-      # 3) Build Release via MSBuild
       - name: Build (Release)
         shell: cmd
         run: |
@@ -63,18 +69,16 @@ jobs:
         shell: pwsh
         run: |
           if (Test-Path "out\Release") {
-            Get-ChildItem -Recurse out\Release | Select-Object FullName,Length
+            Get-ChildItem -Recurse out\Release -Include *.exe,*.dll | Select-Object FullName,Length
           } else {
-            Write-Host "out\Release not found. Listing out folder:"
+            Write-Host "out\Release not found; listing out\"
             Get-ChildItem -Recurse out | Select-Object FullName,Length
           }
 
       - name: Upload artifacts (Release)
         uses: actions/upload-artifact@v4
         with:
-          name: mytelegram-windows-release
+          name: mytelegram-windows-x64-release
           path: |
             out/Release/**/*
-            out/Release/Telegram.exe
-            out/Release/*.dll
           if-no-files-found: error
