@@ -241,7 +241,7 @@ QString psAppDataPath() {
 #ifdef OS_WIN_STORE
 		return appData.absolutePath() + u"/Telegram Desktop UWP/"_q;
 #else // OS_WIN_STORE
-		return appData.absolutePath() + '/' + AppName.utf16() + '/';
+		return appData.absolutePath() + u"/MyTelegram/"_q;
 #endif // OS_WIN_STORE
 	}
 	return QString();
@@ -386,7 +386,7 @@ void SetApplicationIcon(const QIcon &icon) {
 }
 
 QString SingleInstanceLocalServerName(const QString &hash) {
-	return u"Global\\"_q + hash + '-' + cGUIDStr();
+	return u"Global\\MyTelegram-"_q + hash + '-' + cGUIDStr();
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)

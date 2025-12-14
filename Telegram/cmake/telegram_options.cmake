@@ -36,8 +36,14 @@ if (TDESKTOP_API_ID STREQUAL "0" OR TDESKTOP_API_HASH STREQUAL "")
     " ")
 endif()
 
-if (DESKTOP_APP_DISABLE_AUTOUPDATE)
+option(MYTELEGRAM_BRAND "Enable MyTelegram branding and customizations" ON)
+
+if (DESKTOP_APP_DISABLE_AUTOUPDATE OR MYTELEGRAM_BRAND)
     target_compile_definitions(Telegram PRIVATE TDESKTOP_DISABLE_AUTOUPDATE)
+endif()
+
+if (MYTELEGRAM_BRAND)
+    message(STATUS "Building MyTelegram branded version")
 endif()
 
 if (DESKTOP_APP_DISABLE_CRASH_REPORTS)
