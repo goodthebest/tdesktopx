@@ -187,7 +187,7 @@ jobs:
           %TDESKTOP_BUILD_GENERATOR% ^
           %TDESKTOP_BUILD_ARCH% ^
           %TDESKTOP_BUILD_API% ^
-          -D CMAKE_CONFIGURATION_TYPES=Debug ^
+          -D CMAKE_CONFIGURATION_TYPES="Debug;Release" ^
           -D CMAKE_COMPILE_WARNING_AS_ERROR=ON ^
           -D CMAKE_MSVC_DEBUG_INFORMATION_FORMAT= ^
           -D DESKTOP_APP_DISABLE_AUTOUPDATE=OFF ^
@@ -195,14 +195,89 @@ jobs:
           %TDESKTOP_BUILD_DEFINE%
 
           cmake --build ..\out --config Debug --parallel
+          cmake --build ..\out --config Release --parallel
+
+      - name: Install Inno Setup.
+        if: ((env.UPLOAD_ARTIFACT == 'true') || (github.ref == 'refs/heads/nightly')) && (matrix.generator == '')
+        run: |
+          choco install innosetup -y
+
+      - name: Read version information.
+        if: ((env.UPLOAD_ARTIFACT == 'true') || (github.ref == 'refs/heads/nightly')) && (matrix.generator == '')
+        shell: bash
+        run: |
+          cd $TBUILD/$REPO_NAME/Telegram/build
+          AppVersionStrSmall=$(awk '/^AppVersionStrSmall / {print $2}' version)
+          AppVersionStr=$(awk '/^AppVersionStr[[:space:]]/ {print $2}' version)
+          AppVersionStrFull="$AppVersionStr"
+          echo "APP_VERSION_STR_SMALL=$AppVersionStrSmall" >> $GITHUB_ENV
+          echo "APP_VERSION_STR=$AppVersionStr" >> $GITHUB_ENV
+          echo "APP_VERSION_STR_FULL=$AppVersionStrFull" >> $GITHUB_ENV
+
+      - name: Create installer with Inno Setup.
+        if: ((env.UPLOAD_ARTIFACT == 'true') || (github.ref == 'refs/heads/nightly')) && (matrix.generator == '')
+        run: |
+          set "ReleasePath=%TBUILD%\%REPO_NAME%\out\Release"
+          set "SetupScript=%TBUILD%\%REPO_NAME%\Telegram\build\setup.iss"
+          
+          REM Determine build target
+          if "${{ matrix.arch }}" == "x64" (
+            set "BuildTarget=win64"
+          ) else if "${{ matrix.arch }}" == "Win32" (
+            set "BuildTarget=win"
+          ) else (
+            set "BuildTarget=win"
+          )
+          
+          REM Find Inno Setup compiler
+          if exist "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" (
+            set "ISCC=C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          ) else if exist "%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe" (
+            set "ISCC=%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe"
+          ) else (
+            echo ERROR: Inno Setup compiler not found
+            exit /b 1
+          )
+          
+          REM Compile installer with Inno Setup
+          "%ISCC%" ^
+            /dMyAppVersion=${{ env.APP_VERSION_STR_SMALL }} ^
+            /dMyAppVersionZero=${{ env.APP_VERSION_STR }} ^
+            /dMyAppVersionFull=${{ env.APP_VERSION_STR_FULL }} ^
+            /dReleasePath=%ReleasePath% ^
+            /dMyBuildTarget=%BuildTarget% ^
+            "%SetupScript%"
 
       - name: Move artifact.
         if: (env.UPLOAD_ARTIFACT == 'true') || (github.ref == 'refs/heads/nightly')
+        shell: bash
         run: |
-          set OUT=%TBUILD%\%REPO_NAME%\out\Debug
-          mkdir artifact
-          move %OUT%\Telegram.exe artifact/
-          move %OUT%\Updater.exe artifact/
+          OUT=$TBUILD/$REPO_NAME/out/Release
+          mkdir -p artifact
+          
+          # Copy executables
+          cp "$OUT/Telegram.exe" artifact/
+          cp "$OUT/Updater.exe" artifact/
+          
+          # Copy installer if it exists (only for standard builds without generator)
+          if [ "${{ matrix.generator }}" == "" ]; then
+            APP_VERSION_STR_FULL="${{ env.APP_VERSION_STR_FULL }}"
+            if [ "${{ matrix.arch }}" == "x64" ]; then
+              if [ -f "$OUT/tsetup-x64.$APP_VERSION_STR_FULL.exe" ]; then
+                cp "$OUT/tsetup-x64.$APP_VERSION_STR_FULL.exe" "artifact/MyTelegram-Setup-x64-$APP_VERSION_STR_FULL.exe"
+              fi
+            else
+              if [ -f "$OUT/tsetup.$APP_VERSION_STR_FULL.exe" ]; then
+                cp "$OUT/tsetup.$APP_VERSION_STR_FULL.exe" "artifact/MyTelegram-Setup-$APP_VERSION_STR_FULL.exe"
+              fi
+            fi
+          fi
+          
+          # Copy d3d compiler if it exists
+          if [ -d "$OUT/modules" ]; then
+            cp -r "$OUT/modules" artifact/
+          fi
+
       - uses: actions/upload-artifact@v5
         name: Upload artifact.
         if: (env.UPLOAD_ARTIFACT == 'true') || (github.ref == 'refs/heads/nightly')
