@@ -1,6 +1,19 @@
-# [Telegram Desktop][telegram_desktop] – Official Messenger
+# MyTelegram – Rebranded Telegram Desktop Fork
 
-This is the complete source code and the build instructions for the official [Telegram][telegram] messenger desktop client, based on the [Telegram API][telegram_api] and the [MTProto][telegram_proto] secure protocol.
+This is a rebranded fork of [Telegram Desktop][telegram_desktop], designed to run side-by-side with the official Telegram Desktop on Windows 11. It is based on the complete source code of the official [Telegram][telegram] messenger desktop client, using the [Telegram API][telegram_api] and the [MTProto][telegram_proto] secure protocol.
+
+## Key Differences from Official Telegram Desktop
+
+**MyTelegram** can be installed and used simultaneously with official Telegram Desktop because:
+
+- **Unique Application Identity**: Uses different AppUserModelID and GUIDs
+- **Separate Data Directory**: Stores data in `%APPDATA%\MyTelegram` instead of `%APPDATA%\Telegram Desktop`
+- **No Single-Instance Conflict**: Uses unique local server name for IPC
+- **Manual Updates Only**: Auto-update functionality is disabled
+- **Custom Branding**: Uses "MyTelegram" name and icon throughout the application
+- **Independent Installation**: Installs to `C:\Program Files\MyTelegram` by default
+
+This allows you to log into different Telegram accounts on the same machine simultaneously.
 
 [![Version](https://badge.fury.io/gh/telegramdesktop%2Ftdesktop.svg)](https://github.com/telegramdesktop/tdesktop/releases)
 [![Build Status](https://github.com/telegramdesktop/tdesktop/workflows/Windows./badge.svg)](https://github.com/telegramdesktop/tdesktop/actions)
@@ -68,9 +81,21 @@ Version **1.8.15** was the last that supports older systems
 
 ## Build instructions
 
+**Note**: MyTelegram is primarily focused on Windows. While the source supports other platforms, the rebranding customizations are Windows-specific.
+
 * Windows [(32-bit)][win32] [(64-bit)][win64]
-* [macOS][mac]
-* [GNU/Linux using Docker][linux]
+* [macOS][mac] (builds as standard Telegram Desktop)
+* [GNU/Linux using Docker][linux] (builds as standard Telegram Desktop)
+
+### Quick Start (Windows)
+
+1. Install Visual Studio 2022 with Windows 10/11 SDK
+2. Obtain Telegram API credentials (api_id and api_hash) from https://core.telegram.org/api/obtaining_api_id
+3. Clone this repository: `git clone --recursive https://github.com/goodthebest/tdesktopx.git`
+4. Run the build preparation script
+5. Configure and build with your API credentials
+
+See [docs/building-win.md](docs/building-win.md) for detailed instructions.
 
 [//]: # (LINKS)
 [telegram]: https://telegram.org

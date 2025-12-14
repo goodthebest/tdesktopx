@@ -1,9 +1,9 @@
-#define MyAppShortName "Telegram"
-#define MyAppName "Telegram Desktop"
-#define MyAppPublisher "Telegram FZ-LLC"
-#define MyAppURL "https://desktop.telegram.org"
+#define MyAppShortName "MyTelegram"
+#define MyAppName "MyTelegram"
+#define MyAppPublisher "MyTelegram"
+#define MyAppURL "https://telegram.org"
 #define MyAppExeName "Telegram.exe"
-#define MyAppId "53F49750-6209-4FBF-9CA8-7A333C87D1ED"
+#define MyAppId "A1B2C3D4-E5F6-7890-ABCD-EF1234567890"
 #define CurrentYear GetDateTimeString('yyyy','','')
 
 [Setup]
@@ -18,11 +18,11 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={userappdata}\{#MyAppName}
+DefaultDirName={commonpf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 OutputDir={#ReleasePath}
-SetupIconFile={#SourcePath}..\Resources\art\icon256.ico
+SetupIconFile={#SourcePath}..\..\mytelegram.ico
 UninstallDisplayName={#MyAppName}
 UninstallDisplayIcon={app}\Telegram.exe
 Compression=lzma
