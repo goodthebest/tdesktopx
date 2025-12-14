@@ -1,4 +1,4 @@
-name: Windows Build
+name: Windows Build (MyTelegram)
 
 on:
   workflow_dispatch:
@@ -10,64 +10,71 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    timeout-minutes: 180
 
     steps:
       - name: Checkout (with submodules)
         uses: actions/checkout@v4
         with:
           submodules: recursive
+          lfs: true
 
-      - name: Setup MSVC dev environment
-        uses: ilammy/msvc-dev-cmd@v1
+      - name: Git long paths
+        shell: pwsh
+        run: |
+          git config --system core.longpaths true
 
-      - name: Install Qt 6 (MSVC x64)
-        uses: jurplel/install-qt-action@v4
+      - name: Setup Python 3.10
+        uses: actions/setup-python@v5
         with:
-          version: "6.5.3"
-          host: "windows"
-          target: "desktop"
-          arch: "win64_msvc2019_64"
-          cache: true
+          python-version: "3.10"
 
-      - name: Setup vcpkg + install deps
-        shell: pwsh
+      - name: Setup MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      # 1) Prepare third-party libs (Qt/FFmpeg/etc) using repo script
+      - name: Prepare libraries (win.bat)
+        shell: cmd
         run: |
-          $ErrorActionPreference = "Stop"
-          if (!(Test-Path ".\vcpkg")) {
-            git clone https://github.com/microsoft/vcpkg .\vcpkg
-          }
-          .\vcpkg\bootstrap-vcpkg.bat
-          .\vcpkg\vcpkg.exe install vulkan-headers:x64-windows ada-url:x64-windows boost:x64-windows protobuf:x64-windows
-          Write-Host "=== vcpkg installed share dirs ==="
-          Get-ChildItem .\vcpkg\installed\x64-windows\share -Directory | Select-Object Name
+          cd /d "%GITHUB_WORKSPACE%"
+          Telegram\build\prepare\win.bat
 
-      - name: Configure (MSVC + vcpkg)
-        shell: pwsh
+      # 2) Generate Visual Studio solution using repo script
+      - name: Configure (generate out\Telegram.sln)
+        shell: cmd
         run: |
-          $ErrorActionPreference = "Stop"
-          $toolchain = "$env:GITHUB_WORKSPACE\vcpkg\scripts\buildsystems\vcpkg.cmake"
-          $vcpkgRoot = "$env:GITHUB_WORKSPACE\vcpkg\installed\x64-windows"
-          $qtPrefix = "$env:Qt6_DIR"
-          cmake -S . -B build -G "Visual Studio 17 2022" -A x64 `
-            -DCMAKE_TOOLCHAIN_FILE="$toolchain" `
-            -DCMAKE_PREFIX_PATH="$qtPrefix;$vcpkgRoot" `
-            -DVulkan_INCLUDE_DIR="$vcpkgRoot\include"
+          cd /d "%GITHUB_WORKSPACE%\Telegram"
+          configure.bat
 
+      # 3) Build Release via MSBuild
       - name: Build (Release)
-        shell: pwsh
+        shell: cmd
         run: |
-          $ErrorActionPreference = "Stop"
-          cmake --build build --config Release
+          cd /d "%GITHUB_WORKSPACE%"
+          if not exist out\Telegram.sln (
+            echo ERROR: out\Telegram.sln not found
+            exit /b 1
+          )
+          msbuild out\Telegram.sln /m /p:Configuration=Release /p:Platform=x64
 
       - name: List outputs
         shell: pwsh
         run: |
-          Get-ChildItem -Recurse build -Include *.exe,*.dll | Select-Object FullName,Length
+          if (Test-Path "out\Release") {
+            Get-ChildItem -Recurse out\Release | Select-Object FullName,Length
+          } else {
+            Write-Host "out\Release not found. Listing out folder:"
+            Get-ChildItem -Recurse out | Select-Object FullName,Length
+          }
 
-      - name: Upload artifacts
+      - name: Upload artifacts (Release)
         uses: actions/upload-artifact@v4
         with:
-          name: tdesktopx-windows-release
+          name: mytelegram-windows-release
           path: |
-            build/**/*.exe
-            build/**/*.dll
+            out/Release/**/*
+            out/Release/Telegram.exe
+            out/Release/*.dll
+          if-no-files-found: error
