@@ -29,7 +29,6 @@ jobs:
           arch: "win64_msvc2019_64"
           cache: true
 
-      # Install missing deps: Vulkan headers + ada (via vcpkg)
       - name: Setup vcpkg + install deps
         shell: pwsh
         run: |
@@ -38,7 +37,7 @@ jobs:
             git clone https://github.com/microsoft/vcpkg .\vcpkg
           }
           .\vcpkg\bootstrap-vcpkg.bat
-          .\vcpkg\vcpkg.exe install vulkan-headers:x64-windows ada-url:x64-windows
+          .\vcpkg\vcpkg.exe install vulkan-headers:x64-windows ada-url:x64-windows boost:x64-windows
           Write-Host "=== vcpkg installed share dirs ==="
           Get-ChildItem .\vcpkg\installed\x64-windows\share -Directory | Select-Object Name
 
