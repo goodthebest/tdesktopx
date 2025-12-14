@@ -14,9 +14,9 @@ Choose an empty folder for the future build, for example **D:\\TBuild**. It will
 
 All commands (if not stated otherwise) will be launched from **x64 Native Tools Command Prompt for VS 2022.bat** (should be in **Start Menu > Visual Studio 2022** menu folder). Pay attention not to use any other Command Prompt.
 
-### Obtain your API credentials
+### API Credentials
 
-You will require **api_id** and **api_hash** to access the Telegram API servers. To learn how to obtain them [click here][api_credentials].
+**MyTelegram uses test API credentials by default**, so you can build without obtaining your own credentials. For more information or to use custom credentials, see [api_credentials.md][api_credentials].
 
 ## Install third party software
 
@@ -32,9 +32,11 @@ Open **x64 Native Tools Command Prompt for VS 2022.bat**, go to ***BuildPath*** 
 
 ## Build the project
 
-Go to ***BuildPath*\\tdesktop\\Telegram** and run (using [your **api_id** and **api_hash**](#obtain-your-api-credentials))
+Go to ***BuildPath*\\tdesktop\\Telegram** and run:
 
-    configure.bat x64 -D TDESKTOP_API_ID=YOUR_API_ID -D TDESKTOP_API_HASH=YOUR_API_HASH
+    configure.bat x64
+
+**Note:** Test API credentials are used automatically. If you need to use your own credentials, add: `-D TDESKTOP_API_ID=YOUR_API_ID -D TDESKTOP_API_HASH=YOUR_API_HASH`
 
 * Open ***BuildPath*\\tdesktop\\out\\Telegram.sln** in Visual Studio 2022
 * Select Telegram project and press Build > Build Telegram (Debug and Release configurations)

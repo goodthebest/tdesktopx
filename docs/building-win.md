@@ -18,9 +18,9 @@ Choose an empty folder for the future build, for example **D:\\TBuild**. It will
 
 All commands (if not stated otherwise) will be launched from **x86 Native Tools Command Prompt for VS 2022.bat** (should be in **Start Menu > Visual Studio 2022** menu folder). Pay attention not to use any other Command Prompt.
 
-### Obtain your API credentials
+### API Credentials
 
-You will require **api_id** and **api_hash** to access the Telegram API servers. To learn how to obtain them [click here][api_credentials].
+**MyTelegram uses test API credentials by default**, so you can build without obtaining your own credentials. For more information or to use custom credentials, see [api_credentials.md][api_credentials].
 
 ## Install third party software
 
@@ -36,11 +36,14 @@ Open **x86 Native Tools Command Prompt for VS 2022.bat**, go to ***BuildPath*** 
 
 ## Build the project
 
-Go to ***BuildPath*\\tdesktopx\\Telegram** and run (using [your **api_id** and **api_hash**](#obtain-your-api-credentials))
+Go to ***BuildPath*\\tdesktopx\\Telegram** and run:
 
-    configure.bat -D TDESKTOP_API_ID=YOUR_API_ID -D TDESKTOP_API_HASH=YOUR_API_HASH
+    configure.bat
 
-**Note:** MyTelegram branding is enabled by default via the `MYTELEGRAM_BRAND` CMake option. This automatically:
+**Note:** Test API credentials are used automatically. If you need to use your own credentials, add: `-D TDESKTOP_API_ID=YOUR_API_ID -D TDESKTOP_API_HASH=YOUR_API_HASH`
+
+**MyTelegram branding** is enabled by default via the `MYTELEGRAM_BRAND` CMake option. This automatically:
+- Uses test API credentials (can be overridden)
 - Disables auto-updates
 - Uses separate data directory (%APPDATA%\MyTelegram)
 - Uses unique single-instance identifier

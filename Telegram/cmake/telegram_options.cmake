@@ -4,11 +4,25 @@
 # For license and copyright information please follow this link:
 # https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
-option(TDESKTOP_API_TEST "Use test API credentials." OFF)
+option(MYTELEGRAM_BRAND "Enable MyTelegram branding and customizations" ON)
+
+# Enable test API credentials by default for MyTelegram builds
+# Users can still override by setting TDESKTOP_API_TEST=OFF and providing custom credentials
+if (NOT DEFINED TDESKTOP_API_TEST)
+    if (MYTELEGRAM_BRAND)
+        set(TDESKTOP_API_TEST ON CACHE BOOL "Use test API credentials.")
+    else()
+        set(TDESKTOP_API_TEST OFF CACHE BOOL "Use test API credentials.")
+    endif()
+endif()
+
+# Default values act as sentinels to detect if user provided custom credentials
 set(TDESKTOP_API_ID "0" CACHE STRING "Provide 'api_id' for the Telegram API access.")
 set(TDESKTOP_API_HASH "" CACHE STRING "Provide 'api_hash' for the Telegram API access.")
 
-if (TDESKTOP_API_TEST)
+# Use test credentials only if user hasn't provided custom credentials
+# (i.e., if values are still at their default sentinel values)
+if (TDESKTOP_API_TEST AND (TDESKTOP_API_ID STREQUAL "0" OR TDESKTOP_API_HASH STREQUAL ""))
     set(TDESKTOP_API_ID 17349)
     set(TDESKTOP_API_HASH 344583e45741c457fe1862106095a5eb)
 endif()
@@ -17,6 +31,7 @@ if (TDESKTOP_API_ID STREQUAL "0" OR TDESKTOP_API_HASH STREQUAL "")
     message(FATAL_ERROR
     " \n"
     " PROVIDE: -D TDESKTOP_API_ID=[API_ID] -D TDESKTOP_API_HASH=[API_HASH]\n"
+    " OR: -D TDESKTOP_API_TEST=ON (to use test credentials)\n"
     " \n"
     " > To build your version of Telegram Desktop you're required to provide\n"
     " > your own 'api_id' and 'api_hash' for the Telegram API access.\n"
@@ -31,12 +46,11 @@ if (TDESKTOP_API_ID STREQUAL "0" OR TDESKTOP_API_HASH STREQUAL "")
     " > api_id: 17349\n"
     " > api_hash: 344583e45741c457fe1862106095a5eb\n"
     " >\n"
+    " > Note: MyTelegram branded builds automatically use test credentials.\n"
     " > Your users will start getting internal server errors on login\n"
     " > if you deploy an app using those 'api_id' and 'api_hash'.\n"
     " ")
 endif()
-
-option(MYTELEGRAM_BRAND "Enable MyTelegram branding and customizations" ON)
 
 if (DESKTOP_APP_DISABLE_AUTOUPDATE OR MYTELEGRAM_BRAND)
     target_compile_definitions(Telegram PRIVATE TDESKTOP_DISABLE_AUTOUPDATE)
