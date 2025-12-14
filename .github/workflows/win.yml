@@ -219,6 +219,9 @@ jobs:
         run: |
           set "ReleasePath=%TBUILD%\%REPO_NAME%\out\Release"
           set "SetupScript=%TBUILD%\%REPO_NAME%\Telegram\build\setup.iss"
+          set "AppVersionStrSmall=${{ env.APP_VERSION_STR_SMALL }}"
+          set "AppVersionStr=${{ env.APP_VERSION_STR }}"
+          set "AppVersionStrFull=${{ env.APP_VERSION_STR_FULL }}"
           
           REM Determine build target
           if "${{ matrix.arch }}" == "x64" (
@@ -231,9 +234,9 @@ jobs:
           
           REM Compile installer with Inno Setup
           "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" ^
-            /dMyAppVersion=%APP_VERSION_STR_SMALL% ^
-            /dMyAppVersionZero=%APP_VERSION_STR% ^
-            /dMyAppVersionFull=%APP_VERSION_STR_FULL% ^
+            /dMyAppVersion=%AppVersionStrSmall% ^
+            /dMyAppVersionZero=%AppVersionStr% ^
+            /dMyAppVersionFull=%AppVersionStrFull% ^
             /dReleasePath=%ReleasePath% ^
             /dMyBuildTarget=%BuildTarget% ^
             "%SetupScript%"
@@ -242,6 +245,7 @@ jobs:
         if: (env.UPLOAD_ARTIFACT == 'true') || (github.ref == 'refs/heads/nightly')
         run: |
           set OUT=%TBUILD%\%REPO_NAME%\out\Release
+          set "AppVersionStrFull=${{ env.APP_VERSION_STR_FULL }}"
           mkdir artifact
           
           REM Copy executables
@@ -250,12 +254,12 @@ jobs:
           
           REM Copy installer if it exists
           if "${{ matrix.arch }}" == "x64" (
-            if exist %OUT%\tsetup-x64.%APP_VERSION_STR_FULL%.exe (
-              copy %OUT%\tsetup-x64.%APP_VERSION_STR_FULL%.exe artifact\MyTelegram-Setup-x64-%APP_VERSION_STR_FULL%.exe
+            if exist %OUT%\tsetup-x64.%AppVersionStrFull%.exe (
+              copy %OUT%\tsetup-x64.%AppVersionStrFull%.exe artifact\MyTelegram-Setup-x64-%AppVersionStrFull%.exe
             )
           ) else (
-            if exist %OUT%\tsetup.%APP_VERSION_STR_FULL%.exe (
-              copy %OUT%\tsetup.%APP_VERSION_STR_FULL%.exe artifact\MyTelegram-Setup-%APP_VERSION_STR_FULL%.exe
+            if exist %OUT%\tsetup.%AppVersionStrFull%.exe (
+              copy %OUT%\tsetup.%AppVersionStrFull%.exe artifact\MyTelegram-Setup-%AppVersionStrFull%.exe
             )
           )
           
